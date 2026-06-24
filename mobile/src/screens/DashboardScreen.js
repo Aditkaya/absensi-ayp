@@ -8,7 +8,8 @@ import {
   RefreshControl, 
   SafeAreaView, 
   StatusBar,
-  Platform
+  Platform,
+  Alert
 } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { LogIn, LogOut, Clock, Calendar, RefreshCw, User, Award, CheckCircle2 } from 'lucide-react-native';
@@ -168,7 +169,16 @@ export default function DashboardScreen({ navigation }) {
 
           <TouchableOpacity 
             style={[styles.menuItem, { backgroundColor: '#4c0519' }]}
-            onPress={() => navigation.navigate('CheckInOut', { type: 'Check-Out' })}
+            onPress={() => {
+              if (checkInTime === '--:--') {
+                Alert.alert(
+                  'Belum Absen Masuk',
+                  'Anda harus melakukan Absen Masuk terlebih dahulu sebelum bisa melakukan Absen Keluar.'
+                );
+              } else {
+                navigation.navigate('CheckInOut', { type: 'Check-Out' });
+              }
+            }}
           >
             <LogOut color="#fb7185" size={28} />
             <Text style={styles.menuItemTitle}>Absen Keluar</Text>
