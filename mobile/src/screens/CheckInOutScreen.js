@@ -23,6 +23,8 @@ export default function CheckInOutScreen({ route, navigation }) {
   const [location, setLocation] = useState(null);
   const [locating, setLocating] = useState(true);
   const [locError, setLocError] = useState('');
+  const [address, setAddress] = useState(null);
+  const [loadingAddress, setLoadingAddress] = useState(false);
   
   // Camera state
   const [hasCamPermission, setHasCamPermission] = useState(null);
@@ -41,7 +43,7 @@ export default function CheckInOutScreen({ route, navigation }) {
   const cameraRef = useRef(null);
 
   useEffect(() => {
-    // 1. Get GPS Location
+    // 1. Get GPS Location and Address
     (async () => {
       setLocating(true);
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -56,6 +58,22 @@ export default function CheckInOutScreen({ route, navigation }) {
           accuracy: Location.Accuracy.Balanced,
         });
         setLocation(loc);
+
+        // Fetch Address
+        setLoadingAddress(true);
+        try {
+          let geocode = await Location.reverseGeocodeAsync({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude
+          });
+          if (geocode && geocode.length > 0) {
+            setAddress(geocode[0]);
+          }
+        } catch (geoErr) {
+          console.warn('Reverse geocoding failed:', geoErr);
+        } finally {
+          setLoadingAddress(false);
+        }
       } catch (err) {
         setLocError('Gagal mendeteksi lokasi GPS Anda.');
       } finally {
@@ -122,11 +140,21 @@ export default function CheckInOutScreen({ route, navigation }) {
   const triggerSubmit = async () => {
     setSubmitting(true);
     try {
+      let addressStr = '';
+      if (address) {
+        addressStr = [
+          address.street || address.name,
+          address.district,
+          address.city || address.subregion,
+          address.region
+        ].filter(Boolean).join(', ');
+      }
+
       const payload = {
         type: type,
         latitude: location?.coords?.latitude || null,
         longitude: location?.coords?.longitude || null,
-        keterangan: notes + (capturedPhoto ? ' [Selfie uploaded]' : '')
+        keterangan: (addressStr ? `[Alamat: ${addressStr}] ` : '') + notes + (capturedPhoto ? ' [Selfie uploaded]' : '')
       };
 
       const response = await fetch(`${apiUrl}/api/attendance/check`, {
@@ -187,6 +215,25 @@ export default function CheckInOutScreen({ route, navigation }) {
               <Text style={styles.coordsText}>Latitude: {location?.coords?.latitude?.toFixed(6)}</Text>
               <Text style={styles.coordsText}>Longitude: {location?.coords?.longitude?.toFixed(6)}</Text>
               <Text style={styles.accuracyText}>Akurasi: ±{location?.coords?.accuracy?.toFixed(1)} meter</Text>
+
+              {/* Tampilkan Alamat / Nama Jalan / Tempat */}
+              <View style={styles.addressContainer}>
+                <Text style={styles.addressLabel}>Nama Tempat / Jalan:</Text>
+                {loadingAddress ? (
+                  <ActivityIndicator size="small" color="#6366f1" style={{ alignSelf: 'flex-start', marginTop: 6 }} />
+                ) : address ? (
+                  <Text style={styles.addressText}>
+                    {[
+                      address.street || address.name,
+                      address.district,
+                      address.city || address.subregion,
+                      address.region
+                    ].filter(Boolean).join(', ')}
+                  </Text>
+                ) : (
+                  <Text style={styles.addressTextPlaceholder}>Gagal mendapatkan informasi alamat.</Text>
+                )}
+              </View>
             </View>
           )}
         </View>
@@ -483,5 +530,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 10,
     textAlign: 'center',
+  },
+  addressContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderColor: '#334155',
+  },
+  addressLabel: {
+    color: '#94a3b8',
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  addressText: {
+    color: '#f8fafc',
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
+  },
+  addressTextPlaceholder: {
+    color: '#64748b',
+    fontSize: 14,
+    fontStyle: 'italic',
   },
 });
