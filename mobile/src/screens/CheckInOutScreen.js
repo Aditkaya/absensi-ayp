@@ -8,7 +8,8 @@ import {
   ActivityIndicator, 
   ScrollView, 
   Alert,
-  SafeAreaView
+  SafeAreaView,
+  Platform
 } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import * as Location from 'expo-location';

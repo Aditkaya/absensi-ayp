@@ -7,7 +7,8 @@ import {
   ScrollView, 
   RefreshControl, 
   SafeAreaView, 
-  StatusBar 
+  StatusBar,
+  Platform
 } from 'react-native';
 import { AuthContext } from '../context/AuthContext';
 import { LogIn, LogOut, Clock, Calendar, RefreshCw, User, Award, CheckCircle2 } from 'lucide-react-native';

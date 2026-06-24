@@ -65,7 +65,7 @@ app.post('/api/auth/login', async (req, res) => {
     const user = users[0];
 
     // 2. Verify status and approval
-    if (user.status !== 'active') {
+    if (user.status !== 'active' && user.status !== 'approved') {
       return res.status(403).json({ success: false, message: 'Your account status is: ' + user.status });
     }
     if (user.is_approved !== 1) {
