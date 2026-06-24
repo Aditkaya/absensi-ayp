@@ -186,29 +186,6 @@ export default function DashboardScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Today's Activity */}
-        <Text style={styles.sectionTitle}>Aktivitas Hari Ini</Text>
-        <View style={styles.activityList}>
-          {todayLogs.length === 0 ? (
-            <View style={styles.emptyActivity}>
-              <Award color="#475569" size={36} />
-              <Text style={styles.emptyText}>Belum ada riwayat absensi hari ini.</Text>
-            </View>
-          ) : (
-            todayLogs.map((log) => (
-              <View key={log.id} style={styles.activityItem}>
-                <CheckCircle2 color={log.tipe === 'Check-In' ? '#10b981' : '#f43f5e'} size={22} />
-                <View style={styles.activityInfo}>
-                  <Text style={styles.activityType}>{log.tipe}</Text>
-                  <Text style={styles.activityDetail} numberOfLines={1}>{log.keterangan}</Text>
-                </View>
-                <Text style={styles.activityTimeStr}>
-                  {new Date(log.waktu).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
-                </Text>
-              </View>
-            ))
-          )}
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
